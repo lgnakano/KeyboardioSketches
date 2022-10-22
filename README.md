@@ -7,4 +7,4 @@ To customize your own version, edit the configurationModel100.h or the configura
 
 All passwords and Magic Combos used to trigger them are on a passwords.h file. Currently checked in file contains dummy info.
 
-
+Notice: the configuration I use requires a modified version of the OneShot plugin, and FunctionalColors plugin.
