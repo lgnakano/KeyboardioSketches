@@ -8,3 +8,5 @@ To customize your own version, edit the configurationModel100.h or the configura
 All passwords and Magic Combos used to trigger them are on a passwords.h file. Currently checked in file contains dummy info.
 
 Notice: the configuration I use requires a modified version of the OneShot plugin, and FunctionalColors plugin.
+You can get the FunctionalColors plugin here: https://github.com/jdlien/Kaleidoscope-LEDEffect-FunctionalColor, or simply comment out the line that has #define USE_FUNCTIONAL_COLORS if you do not want to use it.
+You can keep using the regular OneShot plugin if you do not define ONE_SHOT_STICKY_TIMEOUT on your configuration file, or you can use my branch https://github.com/lgnakano/Kaleidoscope-OneShot/tree/feature/stickyTimeout if you want to have a timeout after which all sticky keys and layers are cleared. I use this because I may walk away from the keyboardio and have it set on a different layer, or even with a mode key sticking, and not remember when I come back. So, after 5 minutes of no keys being pressed, my keyboard goes back to the first layer, with no sticky keys.
