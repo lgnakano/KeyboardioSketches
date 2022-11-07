@@ -1,4 +1,4 @@
-// #include "passwords.h"
+#include "passwords.h"
 #ifdef ARDUINO_keyboardio_model_100
 #include "configurationModel100.h"
 #endif
