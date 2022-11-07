@@ -8,7 +8,7 @@
 // #define PRIMARY_KEYMAP_COLEMAK
 #define PRIMARY_KEYMAP_CUSTOM
 
-#define USE_EEPROM
+// #define USE_EEPROM
 #ifdef USE_EEPROM
   // #define USE_EEPROM_KEYMAP
   #define USE_EEPROM_DEFAULT_LAYER
@@ -88,7 +88,7 @@
   // #define USE_ENABLE_AUTO_ONE_SHOT
 #endif USE_ONE_SHOT
 
-// #define USE_SPACE_CADET
+#define USE_SPACE_CADET
 // #define USE_STENO
 // #define USE_NUMPAD
 // DO NOT DEFINE USE_NUMPAD

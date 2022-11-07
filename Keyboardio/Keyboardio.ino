@@ -1,9 +1,11 @@
 /*
 
 MUST USE keyboardio GD32 version 1.99.7 and Arduino 
-Version: 2.0.0
-Date: 2022-09-14T07:06:37.759Z
-CLI Version: 0.27.1 [a900cfb2]
+Version: 2.0.1
+Date: 2022-10-27T13:26:40.924Z
+CLI Version: 0.28.0 [06fb1909]
+
+Copyright © 2022 Arduino SA 
 
 All work as expected.
 
@@ -255,6 +257,9 @@ enum {
   PRIMARY,
   NUMPAD,
   FUNCTION,
+#ifdef USE_SPACE_CADET
+  SPACE_CADET
+#endif USE_SPACE_CADET
 };  // layers
 
 /**
@@ -400,7 +405,7 @@ KEYMAPS(
 	   M(MACRO_USER),   
 	#else 
 	   ___,
-	#endif USE_MACROS
+	#endif USE_MACROS && USER
 
 	#ifdef USE_TOPSY_TURVY
 	   TOPSY(6), TOPSY(7), TOPSY(8), TOPSY(9), TOPSY(0), 
@@ -426,7 +431,13 @@ KEYMAPS(
 #endif
      
   [NUMPAD] =  KEYMAP_STACKED
-  (___, ___, ___, ___, ___, ___, ___,
+  (
+#ifdef USE_SPACE_CADET
+  LockLayer(SPACE_CADET),
+#else
+  ___,   
+#endif USE_SPACE_CADET
+    ___, ___, ___, ___, ___, ___, 
    ___, ___, ___, ___, ___, ___, ___,
    ___, ___, ___, ___, ___, ___,
    ___, ___, ___, ___, ___, ___, ___,
@@ -445,7 +456,10 @@ KEYMAPS(
    ___),
 
   [FUNCTION] =  KEYMAP_STACKED
-  (___,      Key_F1,           Key_F2,      Key_F3,     Key_F4,         Key_F5,           Key_CapsLock,
+  (
+	
+  
+   ___, Key_F1,           Key_F2,      Key_F3,     Key_F4,         Key_F5,           Key_CapsLock,
    Key_Tab,  Key_mouseScrollUp,  Key_mouseUp, Key_mouseScrollDn,        Key_mouseBtnL, Key_mouseWarpEnd, Key_mouseWarpNE,
    Key_Home, Key_mouseL,       Key_mouseDn, Key_mouseR, Key_mouseBtnR, Key_mouseWarpNW,
    Key_End,  Key_PrintScreen,  Key_Insert,  ___,        Key_mouseBtnM, Key_mouseWarpSW,  Key_mouseWarpSE,
@@ -467,6 +481,44 @@ KEYMAPS(
    Key_PcApplication,          Consumer_Mute,          Consumer_VolumeDecrement, Consumer_VolumeIncrement, ___,             Key_Backslash,    Key_Pipe,
    ___, ___, Consumer_PlaySlashPause, ___,
    ___)
+#ifdef USE_SPACE_CADET
+	,
+	  [SPACE_CADET] = KEYMAP_STACKED
+  (
+#ifdef USE_SPACE_CADET
+  LockLayer(PRIMARY),
+#else
+  ___,   
+#endif USE_SPACE_CADET 
+	#ifdef USE_TOPSY_TURVY
+        TOPSY(1),      TOPSY(2),  TOPSY(3),   TOPSY(4), TOPSY(5), 
+	#else
+		    Key_1,         Key_2,     Key_3,      Key_4,    Key_5, 
+	#endif TOPSY_TURVY
+                                                                    Key_LEDEffectNext,
+   Key_Backtick, Key_Quote,     Key_Comma, Key_Period, Key_P, Key_Y, Key_Tab,
+   Key_PageUp,   Key_A,         Key_O,     Key_E,      Key_U, Key_I,
+   Key_PageDown, Key_Semicolon, Key_Q,     Key_J,      Key_K, Key_X, Key_Escape,
+	   Key_LeftControl, Key_Backspace, Key_LeftShift, Key_LeftGui, 
+	   ShiftToLayer(NUMPAD),
+	#ifdef USE_MACROS
+	   M(MACRO_USER),   
+	#else 
+	   ___,
+	#endif USE_MACROS
+
+	#ifdef USE_TOPSY_TURVY
+	   TOPSY(6), TOPSY(7), TOPSY(8), TOPSY(9), TOPSY(0), 
+	#else
+	   Key_6,    Key_7,    Key_8,    Key_9,    Key_0, 
+	#endif USE_TOPSY_TURVY
+                                                      LockLayer(NUMPAD),
+   Key_Enter, Key_F, Key_G, Key_C, Key_R, Key_L, Key_Slash,
+              Key_D, Key_H, Key_T, Key_N, Key_S, Key_Minus,
+	   Key_RightGui,   Key_B, Key_M, Key_W, Key_V, Key_Z, Key_Equals,
+	   Key_LeftAlt, Key_RightShift,  Key_Spacebar, Key_RightControl,
+	   ShiftToLayer(FUNCTION))
+#endif USE_SPACE_CADET
 )
 /* Re-enable astyle's indent enforcement */
 // clang-format on
@@ -1080,7 +1132,7 @@ void setup() {
   // To avoid any surprises, SpaceCadet is turned off by default. However, it
   // can be permanently enabled via Chrysalis, so we should only disable it if
   // no configuration exists.
-  SpaceCadetConfig.disableSpaceCadetIfUnconfigured();
+  // SpaceCadetConfig.disableSpaceCadetIfUnconfigured();
     //Set the SpaceCadet map
   //Setting is {KeyThatWasPressed, AlternativeKeyToSend, TimeoutInMS}
   //Note: must end with the SPACECADET_MAP_END delimiter

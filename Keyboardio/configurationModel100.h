@@ -88,7 +88,7 @@
   // #define USE_ENABLE_AUTO_ONE_SHOT
 #endif USE_ONE_SHOT
 
-// #define USE_SPACE_CADET
+#define USE_SPACE_CADET
 // #define USE_STENO
 // #define USE_NUMPAD
 // DO NOT DEFINE USE_NUMPAD
