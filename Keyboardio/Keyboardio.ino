@@ -202,6 +202,9 @@ enum {
   MACRO_USER,
 #endif USER
   MACRO_VERSION_INFO,
+#ifdef USE_SPACE_CADET,
+  MACRO_SWITCH_SPACE_CADET,
+#endif
   MACRO_FCDOWN,
   MACRO_FCUP
 };
@@ -256,10 +259,7 @@ enum {
 enum {
   PRIMARY,
   NUMPAD,
-  FUNCTION,
-#ifdef USE_SPACE_CADET
-  SPACE_CADET
-#endif USE_SPACE_CADET
+  FUNCTION
 };  // layers
 
 /**
@@ -309,7 +309,30 @@ enum {
 	    Macros.type(PSTR(BUILD_INFORMATION));
 	  }
 	}
-
+#ifdef USE_SPACE_CADET
+  static void toggleSpaceCadet(uint8_t key_state) {
+	  if (keyToggledOn(key_state)) {
+#ifdef USE_ONE_SHOT
+  #ifdef DEBUGGING
+		  Macros.type(PSTR("Toggling Auto One Shot\n"));
+  #endif DEBUGGING
+		  OneShot.toggleAutoOneShot();
+#endif USE_ONE_SHOT
+		  if (SpaceCadet.active()) {
+    #ifdef DEBUGGING
+		    Macros.type(PSTR("Space Cadet was active, toggling off\n"));
+		#endif DEBUGGING
+        SpaceCadet.disable();
+		  }
+		  else {
+      #ifdef DEBUGGING      
+		    Macros.type(PSTR("Space Cadet was not active, toggling on\n"));    
+		  #endif DEBUGGING
+        SpaceCadet.enable();
+		  } 
+	  }
+  }
+#endif USE_SPACE_CADET
 
 	/** anyKeyMacro is used to provide the functionality of the 'Any' key.
 	 *
@@ -432,12 +455,12 @@ KEYMAPS(
      
   [NUMPAD] =  KEYMAP_STACKED
   (
+   ___, ___, ___, ___, ___, ___, 
 #ifdef USE_SPACE_CADET
-  LockLayer(SPACE_CADET),
+  M(MACRO_SWITCH_SPACE_CADET),
 #else
   ___,   
 #endif USE_SPACE_CADET
-    ___, ___, ___, ___, ___, ___, 
    ___, ___, ___, ___, ___, ___, ___,
    ___, ___, ___, ___, ___, ___,
    ___, ___, ___, ___, ___, ___, ___,
@@ -457,8 +480,6 @@ KEYMAPS(
 
   [FUNCTION] =  KEYMAP_STACKED
   (
-	
-  
    ___, Key_F1,           Key_F2,      Key_F3,     Key_F4,         Key_F5,           Key_CapsLock,
    Key_Tab,  Key_mouseScrollUp,  Key_mouseUp, Key_mouseScrollDn,        Key_mouseBtnL, Key_mouseWarpEnd, Key_mouseWarpNE,
    Key_Home, Key_mouseL,       Key_mouseDn, Key_mouseR, Key_mouseBtnR, Key_mouseWarpNW,
@@ -481,44 +502,7 @@ KEYMAPS(
    Key_PcApplication,          Consumer_Mute,          Consumer_VolumeDecrement, Consumer_VolumeIncrement, ___,             Key_Backslash,    Key_Pipe,
    ___, ___, Consumer_PlaySlashPause, ___,
    ___)
-#ifdef USE_SPACE_CADET
-	,
-	  [SPACE_CADET] = KEYMAP_STACKED
-  (
-#ifdef USE_SPACE_CADET
-  LockLayer(PRIMARY),
-#else
-  ___,   
-#endif USE_SPACE_CADET 
-	#ifdef USE_TOPSY_TURVY
-        TOPSY(1),      TOPSY(2),  TOPSY(3),   TOPSY(4), TOPSY(5), 
-	#else
-		    Key_1,         Key_2,     Key_3,      Key_4,    Key_5, 
-	#endif TOPSY_TURVY
-                                                                    Key_LEDEffectNext,
-   Key_Backtick, Key_Quote,     Key_Comma, Key_Period, Key_P, Key_Y, Key_Tab,
-   Key_PageUp,   Key_A,         Key_O,     Key_E,      Key_U, Key_I,
-   Key_PageDown, Key_Semicolon, Key_Q,     Key_J,      Key_K, Key_X, Key_Escape,
-	   Key_LeftControl, Key_Backspace, Key_LeftShift, Key_LeftGui, 
-	   ShiftToLayer(NUMPAD),
-	#ifdef USE_MACROS
-	   M(MACRO_USER),   
-	#else 
-	   ___,
-	#endif USE_MACROS
 
-	#ifdef USE_TOPSY_TURVY
-	   TOPSY(6), TOPSY(7), TOPSY(8), TOPSY(9), TOPSY(0), 
-	#else
-	   Key_6,    Key_7,    Key_8,    Key_9,    Key_0, 
-	#endif USE_TOPSY_TURVY
-                                                      LockLayer(NUMPAD),
-   Key_Enter, Key_F, Key_G, Key_C, Key_R, Key_L, Key_Slash,
-              Key_D, Key_H, Key_T, Key_N, Key_S, Key_Minus,
-	   Key_RightGui,   Key_B, Key_M, Key_W, Key_V, Key_Z, Key_Equals,
-	   Key_LeftAlt, Key_RightShift,  Key_Spacebar, Key_RightControl,
-	   ShiftToLayer(FUNCTION))
-#endif USE_SPACE_CADET
 )
 /* Re-enable astyle's indent enforcement */
 // clang-format on
@@ -542,7 +526,8 @@ KEYMAPS(
     #ifdef USER
     FC_KEYCOLOR(M(MACRO_USER), dim(orangered,255))
     #endif USER
-    FC_KEYCOLOR(M(MACRO_VERSION_INFO), dim(yellowgreen,255)) 
+    FC_KEYCOLOR(M(MACRO_VERSION_INFO), dim(yellowgreen, 255)) 
+    FC_KEYCOLOR(M(MACRO_SWITCH_SPACE_CADET), dim(yellowgreen, 255))
     FC_KEYCOLOR(M(MACRO_FCDOWN), dim(blue,255))
     FC_KEYCOLOR(M(MACRO_FCUP), dim(blue,255))
     FC_KEYCOLOR(Key_mouseScrollDn, dim(orange,128))
@@ -627,11 +612,16 @@ const macro_t *macroAction(uint8_t macro_id, KeyEvent &event) {
     #ifdef USER
     case MACRO_USER:
       user(event.state);
-      break;
+    break;
     #endif USER
+    #ifdef USE_SPACE_CADET
+    case MACRO_SWITCH_SPACE_CADET:
+      toggleSpaceCadet(event.state);
+    break;
+    #endif USE_SPACE_CADET
     case MACRO_VERSION_INFO:
       versionInfoMacro(event.state);
-      break;
+    break;
 #ifdef USE_FUNCTIONAL_COLORS
     /******************** FUNCTIONALCOLOR MACROS GO HERE ********************/
     // Here are macros that control the brightness of the active FunctionalColor instance.
@@ -1128,28 +1118,6 @@ void setup() {
   #endif USE_EEPROM_DEFAULT_LAYER
 #endif USE_EEPROM
 
-#ifdef USE_SPACE_CADET
-  // To avoid any surprises, SpaceCadet is turned off by default. However, it
-  // can be permanently enabled via Chrysalis, so we should only disable it if
-  // no configuration exists.
-  // SpaceCadetConfig.disableSpaceCadetIfUnconfigured();
-    //Set the SpaceCadet map
-  //Setting is {KeyThatWasPressed, AlternativeKeyToSend, TimeoutInMS}
-  //Note: must end with the SPACECADET_MAP_END delimiter
-  static kaleidoscope::plugin::SpaceCadet::KeyBinding spacecadetmap[] = {
-
-    {Key_LeftGui, Key_LeftParen, 250},
-    {Key_LeftAlt, Key_RightParen, 250},    
-    {Key_LeftShift, Key_LeftCurlyBracket, 250},
-    {Key_RightShift, Key_RightCurlyBracket, 250},    
-    {Key_LeftControl, Key_LeftBracket, 250},
-    {Key_RightControl, Key_RightBracket, 250},
-    SPACECADET_MAP_END,
-  };
-  //Set the map.
-  SpaceCadet.setMap(spacecadetmap);
-#endif USE_SPACE_CADET
-
 #ifdef USE_EEPROM
   #ifdef USE_LAYER_NAMES
     // Editable layer names are stored in EEPROM too, and we reserve 16 bytes per
@@ -1177,12 +1145,35 @@ void setup() {
 #ifdef USE_ONE_SHOT
   // Uncomment the following to enable OneShot on normal modifier keys:
   #ifdef USE_ENABLE_AUTO_ONE_SHOT
-  // OneShot.enableAutoOneShot();
+  OneShot.enableAutoOneShot();
   #endif USE_ENABLE_AUTO_ONE_SHOT
   #ifdef ONE_SHOT_STICKY_TIMEOUT
   OneShot.setStickyTimeOutSeconds(ONE_SHOT_STICKY_TIMEOUT);
   #endif ONE_SHOT_STICKY_TIMEOUT
 #endif USE_ONE_SHOT
+
+#ifdef USE_SPACE_CADET
+  // To avoid any surprises, SpaceCadet is turned off by default. However, it
+  // can be permanently enabled via Chrysalis, so we should only disable it if
+  // no configuration exists.
+  // SpaceCadetConfig.disableSpaceCadetIfUnconfigured();
+    //Set the SpaceCadet map
+  //Setting is {KeyThatWasPressed, AlternativeKeyToSend, TimeoutInMS}
+  //Note: must end with the SPACECADET_MAP_END delimiter
+  static kaleidoscope::plugin::SpaceCadet::KeyBinding spacecadetmap[] = {
+
+    {Key_LeftGui, Key_LeftParen, 250},
+    {Key_LeftAlt, Key_RightParen, 250},    
+    {Key_LeftShift, Key_LeftCurlyBracket, 250},
+    {Key_RightShift, Key_RightCurlyBracket, 250},    
+    {Key_LeftControl, Key_LeftBracket, 250},
+    {Key_RightControl, Key_RightBracket, 250},
+    SPACECADET_MAP_END,
+  };
+  //Set the map.
+  SpaceCadet.setMap(spacecadetmap);
+#endif USE_SPACE_CADET
+
 #ifdef USE_IDLE_LEDS
   #ifdef IDLE_LEDS_TIMEOUT
     IdleLEDs.setIdleTimeoutSeconds(IDLE_LEDS_TIMEOUT);
