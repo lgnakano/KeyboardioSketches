@@ -1172,6 +1172,7 @@ void setup() {
   };
   //Set the map.
   SpaceCadet.setMap(spacecadetmap);
+  SpaceCadet.disable();
 #endif USE_SPACE_CADET
 
 #ifdef USE_IDLE_LEDS
