@@ -204,6 +204,7 @@ enum {
   MACRO_VERSION_INFO,
 #ifdef USE_SPACE_CADET,
   MACRO_SWITCH_SPACE_CADET,
+  MACRO_SWITCH_SPACE_CADET2,
 #endif
   MACRO_FCDOWN,
   MACRO_FCUP
@@ -258,6 +259,9 @@ enum {
   */
 enum {
   PRIMARY,
+#ifdef USE_SPACE_CADET
+  SECONDARY,  
+#endif USE_SPACE_CADET,
   NUMPAD,
   FUNCTION
 };  // layers
@@ -309,6 +313,13 @@ enum {
 	    Macros.type(PSTR(BUILD_INFORMATION));
 	  }
 	}
+
+#ifdef USE_SPACE_CADET
+  static void toggleSpaceCadet2(uint8_t key_state) {
+    toggleSpaceCadet(key_state);    
+  }
+#endif USE_SPACE_CADET
+
 #ifdef USE_SPACE_CADET
   static void toggleSpaceCadet(uint8_t key_state) {
 	  if (keyToggledOn(key_state)) {
@@ -323,12 +334,14 @@ enum {
 		    Macros.type(PSTR("Space Cadet was active, toggling off\n"));
 		#endif DEBUGGING
         SpaceCadet.disable();
+        Layer.move(PRIMARY);
 		  }
 		  else {
       #ifdef DEBUGGING      
 		    Macros.type(PSTR("Space Cadet was not active, toggling on\n"));    
 		  #endif DEBUGGING
         SpaceCadet.enable();
+        Layer.move(SECONDARY);
 		  } 
 	  }
   }
@@ -413,7 +426,11 @@ KEYMAPS(
 #else
 		    Key_1,         Key_2,     Key_3,      Key_4,    Key_5, 
 #endif TOPSY_TURVY
-                                                                    Key_LEDEffectNext,
+#ifdef USE_SPACE_CADET
+                                                                M(MACRO_SWITCH_SPACE_CADET),
+#else
+                                                                ___,
+#endif USE_SPACE_CADET                                                                   
    Key_Backtick, Key_Quote,     Key_Comma, Key_Period, Key_P, Key_Y, Key_Tab,
    Key_PageUp,   Key_A,         Key_O,     Key_E,      Key_U, Key_I,
    Key_PageDown, Key_Semicolon, Key_Q,     Key_J,      Key_K, Key_X, Key_Escape,
@@ -451,16 +468,30 @@ KEYMAPS(
 
 #error "No default keymap defined. You should make sure that you have a line like '#define PRIMARY_KEYMAP_QWERTY' in your sketch"
 
-#endif
+#endif LAYERS
+
+#ifdef USE_SPACE_CADET
+[SECONDARY] = KEYMAP_STACKED
+(
+     ___, ___, ___, ___, ___, ___, M(MACRO_SWITCH_SPACE_CADET2),
+   ___, ___, ___, ___, ___, ___, ___,
+   ___, ___, ___, ___, ___, ___,
+   ___, ___, ___, ___, ___, ___, ___,
+   ___, ___, ___, ___,
+   ___,
+
+   ___, ___, ___, ___, ___, ___, ___,
+   ___, ___, ___, ___, ___, ___, ___,
+   ___, ___, ___, ___, ___, ___,
+   ___, ___, ___, ___, ___, ___, ___,
+   ___, ___, ___, ___,
+   ___,
+),
+#endif USE_SPACE_CADET
      
   [NUMPAD] =  KEYMAP_STACKED
   (
-   ___, ___, ___, ___, ___, ___, 
-#ifdef USE_SPACE_CADET
-  M(MACRO_SWITCH_SPACE_CADET),
-#else
-  ___,   
-#endif USE_SPACE_CADET
+   ___, ___, ___, ___, ___, ___, Key_LEDEffectNext,
    ___, ___, ___, ___, ___, ___, ___,
    ___, ___, ___, ___, ___, ___,
    ___, ___, ___, ___, ___, ___, ___,
@@ -527,7 +558,10 @@ KEYMAPS(
     FC_KEYCOLOR(M(MACRO_USER), dim(orangered,255))
     #endif USER
     FC_KEYCOLOR(M(MACRO_VERSION_INFO), dim(yellowgreen, 255)) 
-    FC_KEYCOLOR(M(MACRO_SWITCH_SPACE_CADET), dim(yellowgreen, 255))
+    #ifdef USE_SPACE_CADET
+    FC_KEYCOLOR(M(MACRO_SWITCH_SPACE_CADET), dim(greenyellow, 255))
+    FC_KEYCOLOR(M(MACRO_SWITCH_SPACE_CADET2), dim(skyblue, 255))
+    #endif USE_SPACE_CADET
     FC_KEYCOLOR(M(MACRO_FCDOWN), dim(blue,255))
     FC_KEYCOLOR(M(MACRO_FCUP), dim(blue,255))
     FC_KEYCOLOR(Key_mouseScrollDn, dim(orange,128))
@@ -616,6 +650,7 @@ const macro_t *macroAction(uint8_t macro_id, KeyEvent &event) {
     #endif USER
     #ifdef USE_SPACE_CADET
     case MACRO_SWITCH_SPACE_CADET:
+    case MACRO_SWITCH_SPACE_CADET2:
       toggleSpaceCadet(event.state);
     break;
     #endif USE_SPACE_CADET
@@ -667,9 +702,9 @@ const macro_t *macroAction(uint8_t macro_id, KeyEvent &event) {
     #ifdef USE_LED_EFFECT_SOLID_VIOLET
     static kaleidoscope::plugin::LEDSolidColor solidViolet(130, 0, 120);
     #endif USE_LED_EFFECT_SOLID_VIOLET
-    #endif USE_LED_EFFECT_SOLID_COLOR
+  #endif USE_LED_EFFECT_SOLID_COLOR
 
-#ifdef USE_HOST_POWER_MANAGEMENT
+  #ifdef USE_HOST_POWER_MANAGEMENT
 // toggleLedsOnSuspendResume toggles the LEDs off when the host goes to sleep.
 void toggleLedsOnSuspendResume(kaleidoscope::plugin::HostPowerManagement::Event event) {
   switch (event) {
@@ -681,6 +716,14 @@ void toggleLedsOnSuspendResume(kaleidoscope::plugin::HostPowerManagement::Event 
   case kaleidoscope::plugin::HostPowerManagement::Resume:
     LEDControl.enable();
     LEDControl.refreshAll();
+    #ifdef USE_SPACE_CADET
+		if (SpaceCadet.active()) {
+      #ifdef USE_ONE_SHOT
+		  OneShot.toggleAutoOneShot();
+      #endif USE_ONE_SHOT
+      SpaceCadet.disable();
+    }
+    #endif USE_SPACE_CADET    
     break;
   case kaleidoscope::plugin::HostPowerManagement::Sleep:
     break;
@@ -1027,7 +1070,7 @@ KALEIDOSCOPE_INIT_PLUGINS(
 #ifdef USE_STENO
   // Enables the GeminiPR Stenography protocol. Unused by default, but with the
   // plugin enabled, it becomes configurable - and then usable - via Chrysalis.
-  // GeminiPs
+  , GeminiPs
 #endif USE_STENO
   );
 
