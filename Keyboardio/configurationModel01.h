@@ -3,6 +3,8 @@
 #endif
 #define BOARD_TYPE "Model 01"
 
+// #define DEBUGGING
+
 // #define PRIMARY_KEYMAP_QWERTY
 // #define PRIMARY_KEYMAP_DVORAK
 // #define PRIMARY_KEYMAP_COLEMAK
@@ -10,12 +12,12 @@
 
 // #define USE_EEPROM
 #ifdef USE_EEPROM
-  // #define USE_EEPROM_KEYMAP
+  #define USE_EEPROM_KEYMAP
   #define USE_EEPROM_DEFAULT_LAYER
-  // #define USE_DEFAULT_LED_MODE_CONFIG
+  #define USE_DEFAULT_LED_MODE_CONFIG
 #endif USE_EEPROM
 
-#define USE_FOCUS_SERIAL
+// #define USE_FOCUS_SERIAL
 #ifdef USE_FOCUS_SERIAL
   #define USE_FIRMWARE_VERSION
   // #define USE_DYNAMIC_MACROS
@@ -89,6 +91,7 @@
 #endif USE_ONE_SHOT
 
 #define USE_SPACE_CADET
+#define USE_AUTO_SHIFT
 // #define USE_STENO
 // #define USE_NUMPAD
 // DO NOT DEFINE USE_NUMPAD

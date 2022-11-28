@@ -183,6 +183,10 @@ Copyright © 2022 Arduino SA
 #include <Kaleidoscope-TopsyTurvy.h>
 #endif USE_TOPSY_TURVY
 
+#ifdef USE_AUTO_SHIFT
+#include <Kaleidoscope-AutoShift.h>
+#endif USE_AUTO_SHIFT
+
 /** This 'enum' is a list of all the macros used by the Model 100's firmware
 
   * The names aren't particularly important. What is important is that each
@@ -329,6 +333,12 @@ enum {
   #endif DEBUGGING
 		  OneShot.toggleAutoOneShot();
 #endif USE_ONE_SHOT
+#ifdef USE_AUTO_SHIFT
+  #ifdef DEBUGGING
+		  Macros.type(PSTR("Toggling Auto Shift\n"));
+  #endif DEBUGGING
+      AutoShift.toggle();
+#endif USE_AUTO_SHIFT
 		  if (SpaceCadet.active()) {
     #ifdef DEBUGGING
 		    Macros.type(PSTR("Space Cadet was active, toggling off\n"));
@@ -723,7 +733,10 @@ void toggleLedsOnSuspendResume(kaleidoscope::plugin::HostPowerManagement::Event 
       #endif USE_ONE_SHOT
       SpaceCadet.disable();
     }
-    #endif USE_SPACE_CADET    
+    #endif USE_SPACE_CADET
+    #ifdef USE_AUTO_SHIFT
+    AutoShift.disable();
+    #endif USE_AUTO_SHIFT
     break;
   case kaleidoscope::plugin::HostPowerManagement::Sleep:
     break;
@@ -737,7 +750,7 @@ void toggleLedsOnSuspendResume(kaleidoscope::plugin::HostPowerManagement::Event 
 void hostPowerManagementEventHandler(kaleidoscope::plugin::HostPowerManagement::Event event) {
   toggleLedsOnSuspendResume(event);
 }
-#endif USE_HOST_POWER_MANAGEMENT
+  #endif USE_HOST_POWER_MANAGEMENT
 #endif USE_LED_CONTROL
 
 #ifdef USE_KALEIDOSCOPE_MAGIC_COMBO
@@ -851,6 +864,11 @@ KALEIDOSCOPE_INIT_PLUGINS(
   SpaceCadetConfig,
 #endif USE_SPACE_CADET
 
+#ifdef USE_AUTO_SHIFT
+  AutoShift,
+  AutoShiftConfig, // for AutoShiftConfig
+#endif USE_AUTO_SHIFT
+
 #ifdef USE_EEPROM
 	#ifdef USE_FOCUS_SERIAL
   // Focus allows bi-directional communication with the host, and is the
@@ -870,6 +888,9 @@ KALEIDOSCOPE_INIT_PLUGINS(
     // The boot greeting effect pulses the LED button for 10 seconds after the keyboard is first connected
     BootGreetingEffect,
   #endif USE_LED_EFFECT_BOOT_GREETING
+  #ifdef USE_LEB_EFFECT_BOOT_ANIMATION
+    BootAnimationEffect,
+  #endif USE_LED_EFFECT_BOOT_ANIMATION
 #endif USE_LED_CONTROL
 
 #ifdef USE_HARDWARE_TEST_MODE
@@ -1217,6 +1238,17 @@ void setup() {
   SpaceCadet.setMap(spacecadetmap);
   SpaceCadet.disable();
 #endif USE_SPACE_CADET
+
+#ifdef USE_AUTO_SHIFT
+    // Enable AutoShift for letter keys and number keys only:
+  AutoShift.setEnabled(AutoShift.letterKeys() | AutoShift.numberKeys());
+  // Add symbol keys to the enabled categories:
+  AutoShift.enable(AutoShift.symbolKeys());
+  // Set the AutoShift long-press time to 150ms:
+  AutoShift.setTimeout(150);
+  // Start with AutoShift turned on:
+  AutoShift.enable();
+#endif USE_AUTO_SHIFT
 
 #ifdef USE_IDLE_LEDS
   #ifdef IDLE_LEDS_TIMEOUT
