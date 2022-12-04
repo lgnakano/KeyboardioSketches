@@ -329,9 +329,9 @@ enum {
 	  if (keyToggledOn(key_state)) {
 #ifdef USE_ONE_SHOT
   #ifdef DEBUGGING
-		  Macros.type(PSTR("Toggling Auto One Shot\n"));
+		  Macros.type(PSTR("Toggling Auto One Shot Modifiers\n"));
   #endif DEBUGGING
-		  OneShot.toggleAutoOneShot();
+		  OneShot.toggleAutoModifiers();
 #endif USE_ONE_SHOT
 #ifdef USE_AUTO_SHIFT
   #ifdef DEBUGGING
